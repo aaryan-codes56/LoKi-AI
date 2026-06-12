@@ -1,0 +1,34 @@
+# .gitignore: Specifies files and directories that should not be tracked by Git.
+
+# ─── Python / Backend ─────────────────────────────────────────────────────────
+backend/venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Local SQLite database (contains user data)
+backend/loki.db
+
+# Local FAISS vector stores and chat history (session-specific, not committed)
+backend/vectorstore_data/
+
+# Environment variables (API keys — never commit these)
+backend/.env
+.env
+
+# ─── Node / Frontend ──────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# ─── System Files ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
