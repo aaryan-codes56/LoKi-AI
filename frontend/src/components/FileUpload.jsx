@@ -1,7 +1,7 @@
-// frontend/src/components/FileUpload.jsx: Premium light-mode drag-and-drop upload panel with animated states and file list.
+// frontend/src/components/FileUpload.jsx: Premium drag-and-drop file upload with vector icons and dynamic file index states.
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, CloudUpload } from 'lucide-react';
+import { FileText, CheckCircle2, AlertCircle, Loader2, CloudUpload, Trash2 } from 'lucide-react';
 import { uploadFile } from '../api/client';
 
 export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = [] }) {
@@ -20,88 +20,103 @@ export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = 
     if (!file) return;
     const fn = file.name.toLowerCase();
     if (!fn.endsWith('.pdf') && !fn.endsWith('.txt')) {
-      setUploadState({ status: 'error', message: 'Only PDF and TXT files are allowed.', filename: file.name });
+      setUploadState({ status: 'error', message: 'Only PDF and TXT files are supported.', filename: file.name });
       return;
     }
-    setUploadState({ status: 'uploading', message: 'Building knowledge index...', filename: file.name });
+    setUploadState({ status: 'uploading', message: 'Parsing pages & building FAISS index...', filename: file.name });
     try {
       const data = await uploadFile(threadId, file);
-      setUploadState({ status: 'success', message: data.message || `Indexed ${file.name}`, filename: file.name });
+      setUploadState({ status: 'success', message: data.message || `Successfully indexed ${file.name}`, filename: file.name });
       if (onUploadSuccess) onUploadSuccess();
     } catch (err) {
-      setUploadState({ status: 'error', message: err.response?.data?.detail || 'Upload failed.', filename: file.name });
+      setUploadState({ status: 'error', message: err.response?.data?.detail || 'Vector index compilation failed.', filename: file.name });
     }
   };
 
-  const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]); };
-  const handleChange = (e) => { e.preventDefault(); if (e.target.files?.[0]) processFile(e.target.files[0]); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]);
+  };
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    if (e.target.files?.[0]) processFile(e.target.files[0]);
+  };
 
   return (
-    <div className="flex flex-col space-y-5">
+    <div className="flex flex-col space-y-4">
       {/* Drop Zone */}
       <div
-        onDragEnter={handleDrag} onDragOver={handleDrag} onDragLeave={handleDrag} onDrop={handleDrop}
-        className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-7 text-center cursor-pointer transition-all duration-300 group ${
-          dragActive
-            ? 'border-indigo-400 bg-indigo-50/80 scale-[1.02]'
-            : 'border-slate-200 bg-white/40 hover:border-indigo-300 hover:bg-indigo-50/30'
-        }`}
+        onDragEnter={handleDrag}
+        onDragOver={handleDrag}
+        onDragLeave={handleDrag}
+        onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
+        className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-300 group ${
+          dragActive
+            ? 'border-indigo-400 bg-indigo-50/50 scale-[1.01]'
+            : 'border-slate-200/80 bg-white/50 hover:border-indigo-300 hover:bg-indigo-50/10'
+        }`}
       >
         <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.txt" onChange={handleChange} />
 
-        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 ${
+        <div className={`h-10.5 w-10.5 rounded-xl flex items-center justify-center mb-2.5 transition-all duration-300 ${
           dragActive
-            ? 'bg-indigo-100 text-indigo-600 scale-110'
-            : 'bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-400 group-hover:scale-105'
+            ? 'bg-indigo-100 text-indigo-600 scale-105'
+            : 'bg-indigo-50 text-indigo-500 group-hover:scale-105'
         }`}>
-          <CloudUpload size={24} />
+          <CloudUpload size={20} />
         </div>
 
-        <p className="text-sm font-semibold text-slate-600 mb-0.5">
-          Drop your file here or <span className="text-indigo-500">browse</span>
+        <p className="text-xs font-bold text-slate-600 mb-0.5">
+          Drop files here or <span className="text-indigo-500 hover:underline">browse</span>
         </p>
-        <p className="text-[11px] text-slate-400">Supports PDF and TXT — up to 10MB</p>
+        <p className="text-[10px] text-slate-400">Supports PDF & TXT — up to 10MB</p>
       </div>
 
-      {/* Status */}
+      {/* Upload State Alerts */}
       {uploadState.status !== 'idle' && (
-        <div className={`p-3.5 rounded-xl flex items-start space-x-3 animate-fade-in text-sm ${
-          uploadState.status === 'uploading' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' :
-          uploadState.status === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-          'bg-red-50 text-red-600 border border-red-100'
+        <div className={`p-3 rounded-xl flex items-start space-x-2.5 animate-fade-in text-xs ${
+          uploadState.status === 'uploading' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/50' :
+          uploadState.status === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50' :
+          'bg-red-50 text-red-600 border border-red-100/50'
         }`}>
-          {uploadState.status === 'uploading' && <Loader2 size={16} className="animate-spin mt-0.5 text-indigo-500 flex-shrink-0" />}
-          {uploadState.status === 'success' && <CheckCircle2 size={16} className="mt-0.5 text-emerald-500 flex-shrink-0" />}
-          {uploadState.status === 'error' && <AlertCircle size={16} className="mt-0.5 text-red-500 flex-shrink-0" />}
+          {uploadState.status === 'uploading' && <Loader2 size={14} className="animate-spin mt-0.5 text-indigo-500 flex-shrink-0" />}
+          {uploadState.status === 'success' && <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 flex-shrink-0" />}
+          {uploadState.status === 'error' && <AlertCircle size={14} className="mt-0.5 text-red-500 flex-shrink-0" />}
           <div className="min-w-0">
-            <p className="font-semibold text-[13px]">{uploadState.filename}</p>
-            <p className="text-[11px] opacity-80 mt-0.5">{uploadState.message}</p>
+            <p className="font-bold text-[11px] truncate">{uploadState.filename}</p>
+            <p className="text-[10px] opacity-80 mt-0.5">{uploadState.message}</p>
           </div>
         </div>
       )}
 
-      {/* Documents */}
-      <div className="space-y-2.5">
-        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Knowledge Base</h3>
+      {/* Uploaded Documents List */}
+      <div className="space-y-2">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Files in Current Session</h3>
         {uploadedFiles.length === 0 ? (
-          <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center text-slate-400 text-xs bg-white/30">
-            No documents uploaded yet
+          <div className="border border-dashed border-slate-200/80 rounded-xl p-4 text-center text-slate-400 text-xs bg-white/35">
+            No source documents uploaded
           </div>
         ) : (
-          <div className="max-h-44 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+          <div className="max-h-[160px] overflow-y-auto pr-0.5 space-y-1.5 custom-scrollbar">
             {uploadedFiles.map((f, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/60 border border-slate-100 hover:shadow-md hover:shadow-indigo-500/5 transition-all duration-200 animate-fade-in">
-                <div className="flex items-center space-x-3 min-w-0">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center text-indigo-500 flex-shrink-0">
-                    <FileText size={15} />
+              <div
+                key={i}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-white/80 border border-slate-100/80 hover:shadow-sm hover:border-slate-200/60 transition-all duration-200 animate-fade-in"
+              >
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <div className="h-7 w-7 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center flex-shrink-0">
+                    <FileText size={14} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-slate-700 truncate">{f.name}</p>
-                    <p className="text-[10px] text-slate-400">{f.size || 'Local'}</p>
+                    <p className="text-xs font-bold text-slate-700 truncate">{f.name}</p>
+                    <p className="text-[9px] text-slate-400">{f.size || 'Size unknown'}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-500 border border-indigo-100 flex-shrink-0">
+                <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/50 flex-shrink-0">
                   {f.chunks} chunks
                 </span>
               </div>

@@ -1,4 +1,4 @@
-// frontend/src/pages/Dashboard.jsx: Main workspace dashboard with sidebar, chat, upload, search, and auth-aware header.
+// frontend/src/pages/Dashboard.jsx: Premium RAG workspace dashboard with collapsible panels, structured metadata filters, empty states, and floating inputs.
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -12,7 +12,8 @@ import {
 } from '../api/client';
 import {
   Brain, HelpCircle, AlertTriangle, Search, Plus, History,
-  LogOut, User, ChevronRight, Tag, Sparkles
+  LogOut, User, ChevronRight, Tag, Sparkles, SlidersHorizontal,
+  FolderOpen, MessageSquare, ChevronLeft, Menu
 } from 'lucide-react';
 
 const generateThreadId = () => 'loki_thread_' + Math.random().toString(36).substring(2, 11);
@@ -31,13 +32,14 @@ export default function Dashboard() {
   const [messages, setMessages] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [activeTag, setActiveTag] = useState('');
-  const [activeTab, setActiveTab] = useState('upload');
+  const [activeTab, setActiveTab] = useState('upload'); // upload, search
 
-  // ─── UI ─────────────────────────────────────────────────────────────────────
+  // ─── UI Layout Toggles ──────────────────────────────────────────────────────
   const [isThinking, setIsThinking] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [errorBanner, setErrorBanner] = useState('');
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [showHistorySidebar, setShowHistorySidebar] = useState(false);
+  const [showDocSidebar, setShowDocSidebar] = useState(true);
 
   // ─── Init ───────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -90,8 +92,8 @@ export default function Dashboard() {
         sources: data.sources
       }]);
     } catch {
-      setErrorBanner('API request failed. Check OPENAI_API_KEY.');
-      setMessages(prev => [...prev, { sender: 'bot', text: 'Error — check your API key and server.', timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sources: [] }]);
+      setErrorBanner('API request failed. Verify server status or configurations.');
+      setMessages(prev => [...prev, { sender: 'bot', text: 'Error retrieving vector response. Verify backend state.', timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), sources: [] }]);
     } finally {
       setIsThinking(false);
     }
@@ -107,7 +109,7 @@ export default function Dashboard() {
       const id = generateThreadId();
       localStorage.setItem('loki_thread_id', id);
       setThreadId(id);
-    } catch { setErrorBanner('Failed to clear.'); } finally { setIsClearing(false); }
+    } catch { setErrorBanner('Failed to clear session.'); } finally { setIsClearing(false); }
   };
 
   const switchThread = async (tid) => {
@@ -115,19 +117,22 @@ export default function Dashboard() {
     setThreadId(tid);
     setMessages([]);
     setUploadedFiles([]);
-    setShowSidebar(false);
+    setShowHistorySidebar(false);
     await loadSessionData(tid);
   };
 
   const newThread = async () => {
     const id = generateThreadId();
-    const title = `Session ${new Date().toLocaleString()}`;
+    const title = `Session ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     localStorage.setItem('loki_thread_id', id);
     setThreadId(id);
     setMessages([]);
     setUploadedFiles([]);
     if (isAuthenticated) {
-      try { await createThread(id, title); setThreads(prev => [{ id, title, created_at: new Date().toISOString() }, ...prev]); } catch {}
+      try {
+        await createThread(id, title);
+        setThreads(prev => [{ id, title, created_at: new Date().toISOString() }, ...prev]);
+      } catch {}
     }
   };
 
@@ -139,160 +144,254 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/20 text-slate-800 flex flex-col font-['Inter',sans-serif]">
-      {/* Thread sidebar overlay */}
-      {showSidebar && isAuthenticated && (
-        <div className="fixed inset-0 z-40 flex">
-          <div className="w-72 bg-white border-r border-slate-200 flex flex-col h-full shadow-2xl animate-fade-in">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-bold text-slate-700 flex items-center space-x-2 text-sm">
-                <History size={15} className="text-indigo-500" />
-                <span>Past Threads</span>
+    <div className="min-h-screen max-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Inter',sans-serif] overflow-hidden relative">
+      
+      {/* Background blurs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-indigo-300/10 to-violet-300/10 blur-[90px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-gradient-to-br from-pink-300/10 to-purple-300/10 blur-[90px] pointer-events-none z-0" />
+
+      {/* History Sidebar Panel (Overlay for Saved Threads) */}
+      {showHistorySidebar && isAuthenticated && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="w-80 bg-white border-r border-slate-200/60 flex flex-col h-full shadow-2xl animate-fade-in">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="font-extrabold text-slate-700 flex items-center space-x-2 text-sm">
+                <History size={16} className="text-indigo-500" />
+                <span>Saved Sessions</span>
               </h2>
-              <button onClick={() => setShowSidebar(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <ChevronRight size={18} />
+              <button
+                onClick={() => setShowHistorySidebar(false)}
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                <ChevronLeft size={18} />
               </button>
             </div>
-            <button onClick={newThread} className="m-3 flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 text-indigo-600 text-xs font-bold transition-colors">
-              <Plus size={14} /> <span>New Thread</span>
+            
+            <button
+              onClick={newThread}
+              className="m-4 flex items-center justify-center space-x-2 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100/50 text-indigo-600 text-xs font-bold transition-all cursor-pointer"
+            >
+              <Plus size={14} />
+              <span>Start New Thread</span>
             </button>
-            <div className="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
+
+            <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-1.5 custom-scrollbar">
               {threads.map(t => (
                 <button
-                  key={t.id} onClick={() => switchThread(t.id)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-xs transition-all ${
+                  key={t.id}
+                  onClick={() => switchThread(t.id)}
+                  className={`w-full text-left p-3.5 rounded-xl text-xs transition-all border ${
                     t.id === threadId
-                      ? 'bg-indigo-50 text-indigo-600 border border-indigo-100 font-bold'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                      ? 'bg-indigo-50 border-indigo-100/60 text-indigo-600 font-bold'
+                      : 'bg-white border-transparent text-slate-500 hover:bg-slate-50/80 hover:text-slate-700'
                   }`}
                 >
-                  <p className="font-semibold truncate">{t.title}</p>
-                  <p className="text-[9px] text-slate-400 mt-0.5 font-mono">{t.id.slice(0, 20)}...</p>
+                  <p className="font-bold truncate">{t.title}</p>
+                  <p className="text-[9px] text-slate-400 mt-1 font-mono">{t.id}</p>
                 </button>
               ))}
-              {threads.length === 0 && <p className="text-[11px] text-slate-400 text-center py-6">No saved threads yet.</p>}
+              {threads.length === 0 && (
+                <p className="text-[11px] text-slate-400 text-center py-12">No saved threads yet.</p>
+              )}
             </div>
           </div>
-          <div className="flex-1 bg-slate-950/20 backdrop-blur-sm" onClick={() => setShowSidebar(false)} />
+          <div className="flex-1 bg-slate-950/20 backdrop-blur-xs" onClick={() => setShowHistorySidebar(false)} />
         </div>
       )}
 
-      {/* Header */}
+      {/* Main Workspace Header */}
       <Header threadId={threadId} onClear={handleClear} isClearing={isClearing} />
 
-      {/* Sub-nav */}
-      <div className="border-b border-slate-100 bg-white/50 backdrop-blur-md px-4 sm:px-6 py-2 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+      {/* Sub-bar / Info Navigation */}
+      <div className="border-b border-slate-200/40 bg-white/40 backdrop-blur-md px-4 sm:px-6 py-2.5 flex items-center justify-between z-10">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setShowDocSidebar(!showDocSidebar)}
+            className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+          >
+            <FolderOpen size={14} />
+            <span>{showDocSidebar ? 'Hide Source Panel' : 'Show Source Panel'}</span>
+          </button>
+
           {isAuthenticated && (
-            <button onClick={() => setShowSidebar(true)} className="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-indigo-500 font-semibold transition-colors">
-              <History size={13} /> <span className="hidden sm:inline">Threads</span>
+            <button
+              onClick={() => setShowHistorySidebar(true)}
+              className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+            >
+              <History size={14} />
+              <span>Saved Threads</span>
             </button>
           )}
-          <button onClick={newThread} className="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-emerald-500 font-semibold transition-colors">
-            <Plus size={13} /> <span className="hidden sm:inline">New Thread</span>
+
+          <button
+            onClick={newThread}
+            className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors cursor-pointer"
+          >
+            <Plus size={14} />
+            <span>New Session</span>
           </button>
         </div>
-        {isAuthenticated ? (
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1.5 text-xs text-slate-400">
-              <User size={12} className="text-indigo-500" />
-              <span className="text-slate-600 font-semibold">{username}</span>
+
+        <div className="flex items-center space-x-4">
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-3.5">
+              <div className="flex items-center space-x-1.5 text-xs bg-indigo-50 border border-indigo-100/50 px-2.5 py-1 rounded-lg">
+                <User size={12} className="text-indigo-500" />
+                <span className="text-indigo-600 font-bold">{username}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-1 text-xs text-red-500 hover:text-red-600 font-bold transition-colors cursor-pointer"
+              >
+                <LogOut size={13} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
             </div>
-            <button onClick={handleLogout} className="flex items-center space-x-1 text-xs text-red-400 hover:text-red-500 font-semibold transition-colors">
-              <LogOut size={12} /> <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        ) : (
-          <Link to="/login" className="text-xs text-indigo-500 hover:text-indigo-600 font-bold transition-colors">
-            Sign in to save threads →
-          </Link>
-        )}
+          ) : (
+            <Link
+              to="/login"
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-extrabold flex items-center space-x-1 transition-all"
+            >
+              <span>Sign in to save threads</span>
+              <ChevronRight size={13} />
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* Error */}
+      {/* Database Offline Banner */}
       {errorBanner && (
-        <div className="bg-red-50 border-b border-red-100 text-red-600 px-4 sm:px-6 py-2 flex items-center justify-between text-xs font-medium animate-fade-in">
+        <div className="bg-red-50 border-b border-red-100 text-red-600 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs font-semibold animate-fade-in z-10">
           <div className="flex items-center space-x-2">
-            <AlertTriangle size={13} className="text-red-500 animate-pulse" />
+            <AlertTriangle size={14} className="text-red-500 animate-pulse" />
             <span>{errorBanner}</span>
           </div>
-          <button onClick={() => setErrorBanner('')} className="text-red-400 hover:text-red-600 px-2 py-0.5 rounded-lg bg-red-100/50 border border-red-200/50 transition-colors">Dismiss</button>
+          <button
+            onClick={() => setErrorBanner('')}
+            className="text-red-400 hover:text-red-600 px-2.5 py-1 rounded-lg bg-red-100/50 border border-red-200/50 transition-colors cursor-pointer"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* Main layout */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 overflow-hidden">
-        {/* Left sidebar */}
-        <section className="lg:col-span-4 flex flex-col space-y-4">
-          {/* Tabs */}
-          <div className="glass-card-strong rounded-2xl overflow-hidden shadow-lg">
-            <div className="flex border-b border-slate-100">
-              {[['upload', 'Documents', Brain], ['search', 'Search', Search]].map(([id, label, Icon]) => (
-                <button
-                  key={id} onClick={() => setActiveTab(id)}
-                  className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-bold transition-all ${
-                    activeTab === id
-                      ? 'text-indigo-600 border-b-2 border-indigo-500 bg-indigo-50/30'
-                      : 'text-slate-400 hover:text-slate-600'
-                  }`}
-                >
-                  <Icon size={14} /> <span>{label}</span>
-                </button>
-              ))}
+      {/* Main Workspace Frame */}
+      <main className="flex-1 flex w-full max-w-7xl mx-auto overflow-hidden relative z-10">
+        
+        {/* Collapsible Source Side Panel (Uploads, Search, Tags) */}
+        <div
+          className={`flex-shrink-0 border-r border-slate-200/60 flex flex-col h-full bg-white/40 backdrop-blur-md transition-all duration-300 z-10 overflow-hidden ${
+            showDocSidebar ? 'w-80 opacity-100 px-4 py-5' : 'w-0 opacity-0 px-0 py-0'
+          }`}
+        >
+          <div className="flex-1 flex flex-col space-y-5 min-w-[288px]">
+            {/* Sidebar Tabs */}
+            <div className="glass-panel rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+              <div className="flex border-b border-slate-100">
+                {[
+                  ['upload', 'Documents', Brain],
+                  ['search', 'Search', Search]
+                ].map(([id, label, Icon]) => (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-bold transition-all cursor-pointer ${
+                      activeTab === id
+                        ? 'text-indigo-600 border-b-2 border-indigo-500 bg-indigo-50/20'
+                        : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                  >
+                    <Icon size={13} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="p-4 bg-white/50">
+                {activeTab === 'upload' ? (
+                  <FileUpload
+                    threadId={threadId}
+                    onUploadSuccess={handleUploadSuccess}
+                    uploadedFiles={uploadedFiles}
+                  />
+                ) : (
+                  <SemanticSearch threadId={threadId} />
+                )}
+              </div>
             </div>
-            <div className="p-5">
-              {activeTab === 'upload'
-                ? <FileUpload threadId={threadId} onUploadSuccess={handleUploadSuccess} uploadedFiles={uploadedFiles} />
-                : <SemanticSearch threadId={threadId} />
-              }
+
+            {/* Custom Tag Metadata Filter */}
+            <div className="glass-panel rounded-xl p-4 flex-shrink-0">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center space-x-1.5">
+                <Tag size={11} className="text-violet-500" />
+                <span>Filter Knowledge Base</span>
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {TAGS.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setActiveTag(tag)}
+                    className={`text-[10px] px-2.5 py-1.5 rounded-full border font-bold transition-all cursor-pointer ${
+                      activeTag === tag
+                        ? 'bg-violet-100 text-violet-600 border-violet-200/50 shadow-sm'
+                        : 'bg-white text-slate-400 border-slate-200/60 hover:border-indigo-200 hover:text-slate-600'
+                    }`}
+                  >
+                    {tag || 'All Contents'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sidebar Guide */}
+            <div className="glass-panel rounded-xl p-4.5 text-slate-400 text-[11px] leading-relaxed space-y-1.5 overflow-y-auto custom-scrollbar flex-1">
+              <h4 className="font-bold text-slate-600 flex items-center space-x-1.5 text-xs mb-2">
+                <HelpCircle size={13} className="text-indigo-500" />
+                <span>RAG Instructions</span>
+              </h4>
+              <p>1. Drop PDFs or text files to build your vector database indices.</p>
+              <p>2. Chunks are automatically tokenized and stored in FAISS.</p>
+              <p>3. Tag queries to restrict vector matches to specific fields.</p>
+              <p>4. Citations list the direct matches retrieved by cosine distance.</p>
             </div>
           </div>
+        </div>
 
-          {/* Tag filter */}
-          <div className="glass-card rounded-2xl p-4">
-            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center space-x-1.5">
-              <Tag size={11} className="text-violet-500" /> <span>Filter by Tag</span>
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {TAGS.map(tag => (
-                <button
-                  key={tag} onClick={() => setActiveTag(tag)}
-                  className={`text-[11px] px-3 py-1.5 rounded-full border font-bold transition-all ${
-                    activeTag === tag
-                      ? 'bg-violet-100 text-violet-600 border-violet-200 shadow-sm'
-                      : 'bg-white text-slate-400 border-slate-200 hover:border-indigo-200 hover:text-slate-600'
-                  }`}
-                >
-                  {tag || 'All'}
-                </button>
-              ))}
-            </div>
-          </div>
+        {/* Floating Toggler Overlay (For smaller desktop screens) */}
+        {!showDocSidebar && (
+          <button
+            onClick={() => setShowDocSidebar(true)}
+            className="absolute top-4 left-4 z-20 h-9 w-9 bg-white border border-slate-200/80 shadow-md rounded-xl flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-all cursor-pointer"
+          >
+            <Menu size={16} />
+          </button>
+        )}
 
-          {/* How it works */}
-          <div className="glass-card rounded-2xl p-5 text-slate-400 text-xs leading-relaxed space-y-1.5">
-            <h3 className="font-bold text-slate-600 flex items-center space-x-1.5 text-[13px] mb-2">
-              <HelpCircle size={14} className="text-indigo-500" /> <span>How LoKi works</span>
-            </h3>
-            <p>1. Upload PDFs or TXT files with optional tags.</p>
-            <p>2. Chunks are embedded into FAISS for instant retrieval.</p>
-            <p>3. Use Semantic Search to find snippets without the LLM.</p>
-            <p>4. Tag filters narrow context to specific categories.</p>
-            <p>5. Sign in to persist and switch between sessions.</p>
-          </div>
-        </section>
-
-        {/* Chat */}
-        <section className="lg:col-span-8 h-[calc(100vh-180px)] min-h-[450px]">
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col h-full bg-transparent p-4 sm:p-5 relative">
           {activeTag && (
-            <div className="mb-3 px-4 py-2 rounded-xl bg-violet-50 border border-violet-100 text-xs text-violet-600 flex items-center space-x-2 font-medium animate-fade-in">
-              <Tag size={12} />
-              <span>Filtering by tag: <strong>{activeTag}</strong></span>
-              <button onClick={() => setActiveTag('')} className="ml-auto text-violet-400 hover:text-violet-600 transition-colors font-bold">Clear</button>
+            <div className="mb-3.5 px-4 py-2 rounded-xl bg-violet-50 border border-violet-100 text-xs text-violet-600 flex items-center justify-between font-semibold animate-fade-in">
+              <div className="flex items-center space-x-2">
+                <Tag size={12} />
+                <span>Active Query Category Filter: <strong>{activeTag}</strong></span>
+              </div>
+              <button
+                onClick={() => setActiveTag('')}
+                className="text-violet-400 hover:text-violet-600 font-bold text-[11px] transition-colors cursor-pointer"
+              >
+                Clear Tag Filter
+              </button>
             </div>
           )}
-          <ChatWindow messages={messages} onSendMessage={handleSend} isThinking={isThinking} />
-        </section>
+
+          <div className="flex-1 h-full min-h-0">
+            <ChatWindow
+              messages={messages}
+              onSendMessage={handleSend}
+              isThinking={isThinking}
+              activeTag={activeTag}
+            />
+          </div>
+        </div>
       </main>
     </div>
   );

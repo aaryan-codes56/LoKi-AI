@@ -1,8 +1,8 @@
-// frontend/src/pages/LoginPage.jsx: Dedicated login page with premium card layout and navigation links.
+// frontend/src/pages/LoginPage.jsx: Premium split-pane login interface with vector graphics, features showcase, and responsive forms.
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogIn, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
+import { LogIn, Eye, EyeOff, Loader2, Sparkles, Database, Shield, Brain } from 'lucide-react';
 import { login } from '../api/client';
 
 export default function LoginPage() {
@@ -25,78 +25,161 @@ export default function LoginPage() {
       localStorage.setItem('loki_user_id', String(data.user_id));
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed');
+      setError(err.response?.data?.detail || 'Login failed. Check credentials or ensure backend is running.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-indigo-50/30 to-violet-50/30 flex items-center justify-center p-4 font-['Inter',sans-serif]">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <Link to="/" className="flex items-center justify-center space-x-2.5 mb-8">
-          <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-            <Sparkles size={20} className="text-white" />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 font-['Inter',sans-serif] bg-[#f8fafc] overflow-hidden relative">
+      
+      {/* Background Blobs (for mobile and styling consistency) */}
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-indigo-300/10 to-violet-300/10 blur-[100px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-300/10 to-purple-300/10 blur-[100px] pointer-events-none z-0" />
+
+      {/* Left Pane: Marketing Showcase (Desktop only) */}
+      <div className="hidden lg:flex lg:col-span-5 relative bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 text-white flex-col justify-between p-12 overflow-hidden shadow-2xl z-10">
+        
+        {/* Decorative Grid Lines */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+        {/* Brand */}
+        <Link to="/" className="flex items-center space-x-2.5 relative z-10">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <Sparkles size={17} className="text-white" />
           </div>
-          <span className="font-extrabold text-xl gradient-text">LoKi</span>
+          <span className="font-extrabold text-lg tracking-tight text-white">LoKi</span>
         </Link>
 
-        {/* Card */}
-        <div className="glass-card-strong rounded-3xl p-7 sm:p-8 shadow-xl">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Welcome back</h1>
-            <p className="text-sm text-slate-400 mt-1">Sign in to access your knowledge sessions</p>
+        {/* Feature List */}
+        <div className="space-y-10 my-auto relative z-10">
+          <div className="space-y-3.5">
+            <h2 className="text-3xl font-black tracking-tight leading-snug">
+              Secure Local RAG <br />
+              <span className="text-indigo-400">At Your Fingertips.</span>
+            </h2>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+              Initialize multiple knowledge sessions, store documents locally via FAISS, and query them securely under your user account.
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-5">
+            {[
+              { icon: Database, title: "Persistent Workspace Sessions", desc: "Store separate document groups in SQLite threads." },
+              { icon: Brain, title: "Zero-Hallucination Answers", desc: "Responses are strictly validated against retrieved content." },
+              { icon: Shield, title: "Account Privacy Protection", desc: "Passwords hashed locally using secure bcrypt salts." }
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-start space-x-3.5 group">
+                <div className="h-9 w-9 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform flex-shrink-0">
+                  <item.icon size={16} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-200">{item.title}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="relative z-10">
+          <p className="text-[11px] text-slate-500">Built as an original portfolio project demonstrating production-grade RAG architecture.</p>
+        </div>
+      </div>
+
+      {/* Right Pane: Form (Centering responsive card) */}
+      <div className="lg:col-span-7 flex flex-col justify-center items-center px-4 sm:px-12 py-16 relative z-10">
+        
+        {/* Mobile Header */}
+        <Link to="/" className="lg:hidden flex items-center space-x-2.5 mb-8">
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
+            <Sparkles size={18} className="text-white" />
+          </div>
+          <span className="font-extrabold text-lg gradient-text">LoKi</span>
+        </Link>
+
+        {/* Sign In Form Card */}
+        <div className="glass-panel-strong w-full max-w-[440px] rounded-3xl p-8 sm:p-10 shadow-xl border border-slate-200/60">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Welcome back</h1>
+            <p className="text-xs text-slate-400 mt-1.5">Sign in to retrieve your document threads</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Username</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Username</label>
               <input
-                type="text" value={username} onChange={(e) => setUsername(e.target.value)}
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
-                className="mt-1.5 w-full bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
+                className="mt-1.5 w-full premium-input text-slate-700 text-xs rounded-xl px-4 py-3.5 focus:outline-none placeholder:text-slate-400"
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Password</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Password</label>
               <div className="relative mt-1.5">
                 <input
-                  type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
+                  type={showPass ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
+                  className="w-full premium-input text-slate-700 text-xs rounded-xl px-4 py-3.5 pr-10 focus:outline-none placeholder:text-slate-400"
                 />
-                <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-medium rounded-xl px-4 py-2.5 animate-fade-in">
+              <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-semibold rounded-xl px-4 py-3 animate-fade-in">
                 {error}
               </div>
             )}
 
             <button
-              type="submit" disabled={loading}
-              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-bold text-sm transition-all shadow-lg shadow-indigo-500/25 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:opacity-95 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-2 cursor-pointer"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
-              <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+              {loading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn size={14} />
+                  <span>Sign In</span>
+                </>
+              )}
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-400 mt-6">
-            Don't have an account?{' '}
-            <Link to="/signup" className="font-bold text-indigo-500 hover:text-indigo-600 transition-colors">Create one</Link>
-          </p>
+          {/* Nav links */}
+          <div className="text-center mt-6.5 pt-6 border-t border-slate-100">
+            <p className="text-xs text-slate-400">
+              Don't have an account?{' '}
+              <Link to="/signup" className="font-bold text-indigo-500 hover:text-indigo-600 transition-colors">
+                Sign up
+              </Link>
+            </p>
+            <p className="mt-3.5">
+              <Link to="/dashboard" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">
+                Continue without account →
+              </Link>
+            </p>
+          </div>
         </div>
-
-        <p className="text-center text-xs text-slate-400 mt-6">
-          <Link to="/dashboard" className="hover:text-slate-600 transition-colors">Continue without account →</Link>
-        </p>
       </div>
     </div>
   );

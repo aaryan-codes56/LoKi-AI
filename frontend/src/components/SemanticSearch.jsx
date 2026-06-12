@@ -1,4 +1,4 @@
-// frontend/src/components/SemanticSearch.jsx: Premium light-mode semantic search panel with tag filtering.
+// frontend/src/components/SemanticSearch.jsx: Premium semantic search input panels with responsive citation boxes and tag labels.
 
 import React, { useState } from 'react';
 import { Search, Loader2, BookOpen, Tag } from 'lucide-react';
@@ -32,54 +32,70 @@ export default function SemanticSearch({ threadId }) {
     <div className="flex flex-col space-y-4">
       <form onSubmit={handleSearch} className="space-y-2.5">
         <div className="relative">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text" value={query} onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search across your documents..."
-            className="w-full bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Query semantic index..."
+            className="w-full premium-input text-slate-700 text-xs rounded-xl pl-9.5 pr-4 py-3 focus:outline-none placeholder:text-slate-400"
           />
         </div>
+        
         <div className="relative">
-          <Tag size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Tag size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text" value={tagFilter} onChange={(e) => setTagFilter(e.target.value)}
+            type="text"
+            value={tagFilter}
+            onChange={(e) => setTagFilter(e.target.value)}
             placeholder="Filter by tag (optional)"
-            className="w-full bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
+            className="w-full premium-input text-slate-700 text-xs rounded-xl pl-9.5 pr-4 py-2.5 focus:outline-none placeholder:text-slate-400"
           />
         </div>
+
         <button
-          type="submit" disabled={isSearching || !query.trim()}
-          className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
+          type="submit"
+          disabled={isSearching || !query.trim()}
+          className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-sm shadow-indigo-500/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         >
-          {isSearching ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
-          <span>{isSearching ? 'Searching...' : 'Search'}</span>
+          {isSearching ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
+          <span>{isSearching ? 'Searching...' : 'Search Vectors'}</span>
         </button>
       </form>
 
       {searched && (
         <div className="space-y-2.5 animate-fade-in">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-            {results.length > 0 ? `${results.length} results` : 'No results'}
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">
+            {results.length > 0 ? `${results.length} vector segments found` : 'No segments found'}
           </p>
-          {results.map((r, i) => (
-            <div key={i} className="bg-white/70 border border-slate-100 rounded-xl p-3.5 space-y-2 hover:shadow-md hover:shadow-indigo-500/5 transition-all">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <BookOpen size={13} className="text-indigo-500" />
-                  <span className="text-[11px] font-bold text-slate-600">{r.source}</span>
+          
+          <div className="max-h-[180px] overflow-y-auto pr-0.5 space-y-2 custom-scrollbar">
+            {results.map((r, i) => (
+              <div
+                key={i}
+                className="bg-white/80 border border-slate-100/90 rounded-xl p-3.5 space-y-2.5 hover:shadow-sm hover:border-slate-200/50 transition-all duration-200"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen size={12} className="text-indigo-500" />
+                    <span className="text-[10px] font-bold text-slate-600 truncate max-w-[120px]">{r.source}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    {r.tag && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 border border-violet-100/50 font-bold">
+                        {r.tag}
+                      </span>
+                    )}
+                    <span className="text-[9px] font-mono text-slate-400">#{r.chunk_index}</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  {r.tag && (
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-500 border border-violet-100 font-bold">
-                      {r.tag}
-                    </span>
-                  )}
-                  <span className="text-[9px] font-mono text-slate-400">#{r.chunk_index}</span>
-                </div>
+                
+                <p className="text-[10px] text-slate-500 leading-relaxed font-mono italic">
+                  "{r.content}"
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed font-mono line-clamp-3">"{r.content}"</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
