@@ -1,19 +1,15 @@
-// frontend/src/components/ChatWindow.jsx: Implements conversational bubble log, loading states, citations integration, and submission handlers.
+// frontend/src/components/ChatWindow.jsx: Premium light-mode chat interface with elegant bubbles, typing indicator, and citations.
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import SourceCard from './SourceCard';
 
 export default function ChatWindow({ messages, onSendMessage, isThinking }) {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isThinking]);
 
   const handleSubmit = (e) => {
@@ -24,86 +20,74 @@ export default function ChatWindow({ messages, onSendMessage, isThinking }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl relative">
-      {/* Messages Viewport */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+    <div className="flex flex-col h-full glass-card-strong rounded-2xl overflow-hidden shadow-xl">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-4">
-            <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-lg shadow-indigo-500/5">
-              <Bot size={32} />
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
+            <div className="h-16 w-16 rounded-3xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center text-indigo-500 shadow-lg shadow-indigo-500/10 animate-float">
+              <Sparkles size={28} />
             </div>
-            <div className="max-w-md">
-              <h3 className="text-lg font-bold text-slate-100 mb-1">Talk to your Documents</h3>
-              <p className="text-sm text-slate-400">
-                Upload a document in the left panel, then ask any question here. LoKi will locate the facts and reply based only on your uploads.
+            <div className="max-w-sm">
+              <h3 className="text-lg font-bold text-slate-700 mb-1.5">Start a Conversation</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Upload a document in the sidebar, then ask questions here. LoKi answers using <strong className="text-indigo-500">only your content</strong> — no guessing.
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {messages.map((msg, idx) => {
               const isUser = msg.sender === 'user';
               return (
-                <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'} items-start space-x-3`}>
-                  {/* Bot Avatar */}
+                <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'} items-start gap-3 animate-fade-in`}>
                   {!isUser && (
-                    <div className="h-8 w-8 rounded-lg bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center text-indigo-400 flex-shrink-0">
-                      <Bot size={16} />
+                    <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 flex-shrink-0">
+                      <Bot size={15} />
                     </div>
                   )}
 
-                  {/* Bubble & Metadata */}
-                  <div className="flex flex-col max-w-[85%] space-y-2">
-                    <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-md ${
+                  <div className="flex flex-col max-w-[85%] sm:max-w-[75%] space-y-2">
+                    <div className={`rounded-2xl px-4 py-3 text-[13.5px] leading-relaxed shadow-sm ${
                       isUser
-                        ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-tr-none'
-                        : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none'
+                        ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white rounded-tr-md'
+                        : 'bg-white border border-slate-100 text-slate-700 rounded-tl-md'
                     }`}>
                       <p className="whitespace-pre-wrap">{msg.text}</p>
-                      <span className="block text-[9px] text-slate-400/80 mt-1.5 text-right font-mono">
+                      <span className={`block text-[9px] mt-2 text-right font-medium ${
+                        isUser ? 'text-indigo-200' : 'text-slate-300'
+                      }`}>
                         {msg.timestamp}
                       </span>
                     </div>
 
-                    {/* Sources citation cards directly under the bot's response bubble */}
-                    {!isUser && msg.sources && msg.sources.length > 0 && (
-                      <div className="flex flex-col space-y-2 mt-2 pl-1">
-                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Sources:</span>
-                        <div className="grid grid-cols-1 gap-2">
-                          {msg.sources.map((src, srcIdx) => (
-                            <SourceCard
-                              key={srcIdx}
-                              source={src.source}
-                              content={src.content}
-                              chunkIndex={src.chunk_index}
-                            />
-                          ))}
-                        </div>
+                    {!isUser && msg.sources?.length > 0 && (
+                      <div className="space-y-1.5 mt-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Sources</span>
+                        {msg.sources.map((src, si) => (
+                          <SourceCard key={si} source={src.source} content={src.content} chunkIndex={src.chunk_index} />
+                        ))}
                       </div>
                     )}
                   </div>
 
-                  {/* User Avatar */}
                   {isUser && (
-                    <div className="h-8 w-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 flex-shrink-0">
-                      <User size={16} />
+                    <div className="h-8 w-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 flex-shrink-0">
+                      <User size={15} />
                     </div>
                   )}
                 </div>
               );
             })}
 
-            {/* Thinking indicator bubble */}
             {isThinking && (
-              <div className="flex justify-start items-start space-x-3">
-                <div className="h-8 w-8 rounded-lg bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center text-indigo-400 flex-shrink-0">
-                  <Bot size={16} />
+              <div className="flex justify-start items-start gap-3 animate-fade-in">
+                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 flex-shrink-0">
+                  <Bot size={15} />
                 </div>
-                <div className="flex flex-col space-y-1">
-                  <div className="rounded-2xl bg-slate-900 border border-slate-800 px-4 py-3 text-sm text-slate-400 rounded-tl-none flex items-center space-x-2.5 shadow-md">
-                    <Loader2 size={16} className="animate-spin text-indigo-400" />
-                    <span className="font-medium animate-pulse">Thinking...</span>
-                  </div>
+                <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-md px-4 py-3 shadow-sm flex items-center space-x-2.5">
+                  <Loader2 size={15} className="animate-spin text-indigo-500" />
+                  <span className="text-sm text-slate-400 font-medium animate-pulse">Thinking...</span>
                 </div>
               </div>
             )}
@@ -112,22 +96,22 @@ export default function ChatWindow({ messages, onSendMessage, isThinking }) {
         )}
       </div>
 
-      {/* Input panel bar */}
-      <form onSubmit={handleSubmit} className="p-4 border-t border-slate-800 bg-slate-900/50 flex items-center space-x-3">
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-slate-100 bg-white/60 flex items-center gap-3">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isThinking}
-          placeholder="Ask LoKi about your document content..."
-          className="flex-1 bg-slate-950 text-slate-100 text-sm border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500/70 transition-colors placeholder:text-slate-500"
+          placeholder="Ask about your documents..."
+          className="flex-1 bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
         />
         <button
           type="submit"
           disabled={!input.trim() || isThinking}
-          className="h-11 w-11 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-indigo-600 focus:outline-none shadow-lg shadow-indigo-600/20 active:scale-95"
+          className="h-[44px] w-[44px] rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white flex items-center justify-center transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 active:scale-95 flex-shrink-0"
         >
-          <Send size={18} />
+          <Send size={17} />
         </button>
       </form>
     </div>

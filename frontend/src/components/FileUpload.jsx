@@ -1,7 +1,7 @@
-// frontend/src/components/FileUpload.jsx: Drag-and-drop document upload panel with file lists, type checking, and progress feedback.
+// frontend/src/components/FileUpload.jsx: Premium light-mode drag-and-drop upload panel with animated states and file list.
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertCircle, Loader2, CloudUpload } from 'lucide-react';
 import { uploadFile } from '../api/client';
 
 export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = [] }) {
@@ -12,150 +12,96 @@ export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
   };
 
   const processFile = async (file) => {
     if (!file) return;
-    
-    // Check file extensions (PDF and TXT supported)
-    const fileNameLower = file.name.toLowerCase();
-    const isPDF = fileNameLower.endsWith('.pdf');
-    const isTXT = fileNameLower.endsWith('.txt');
-    
-    if (!isPDF && !isTXT) {
-      setUploadState({
-        status: 'error',
-        message: 'Only PDF and TXT files are allowed.',
-        filename: file.name
-      });
+    const fn = file.name.toLowerCase();
+    if (!fn.endsWith('.pdf') && !fn.endsWith('.txt')) {
+      setUploadState({ status: 'error', message: 'Only PDF and TXT files are allowed.', filename: file.name });
       return;
     }
-
-    setUploadState({ status: 'uploading', message: 'Ingesting file & building vector store...', filename: file.name });
-    
+    setUploadState({ status: 'uploading', message: 'Building knowledge index...', filename: file.name });
     try {
-      // Send upload request to FastAPI backend
       const data = await uploadFile(threadId, file);
-      
-      setUploadState({
-        status: 'success',
-        message: data.message || `Successfully parsed ${file.name}`,
-        filename: file.name
-      });
-      
-      // Notify parent to fetch updated list of documents from backend
-      if (onUploadSuccess) {
-        onUploadSuccess();
-      }
+      setUploadState({ status: 'success', message: data.message || `Indexed ${file.name}`, filename: file.name });
+      if (onUploadSuccess) onUploadSuccess();
     } catch (err) {
-      console.error(err);
-      setUploadState({
-        status: 'error',
-        message: err.response?.data?.detail || 'Failed to upload and ingest file. Please check backend log.',
-        filename: file.name
-      });
+      setUploadState({ status: 'error', message: err.response?.data?.detail || 'Upload failed.', filename: file.name });
     }
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
-    }
-  };
-
-  const handleChange = (e) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
-    }
-  };
-
-  const onButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleDrop = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); if (e.dataTransfer.files?.[0]) processFile(e.dataTransfer.files[0]); };
+  const handleChange = (e) => { e.preventDefault(); if (e.target.files?.[0]) processFile(e.target.files[0]); };
 
   return (
-    <div className="flex flex-col space-y-6">
-      {/* Drag and Drop Zone */}
+    <div className="flex flex-col space-y-5">
+      {/* Drop Zone */}
       <div
-        onDragEnter={handleDrag}
-        onDragOver={handleDrag}
-        onDragLeave={handleDrag}
-        onDrop={handleDrop}
-        className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
-          dragActive 
-            ? 'border-indigo-500 bg-indigo-500/5' 
-            : 'border-slate-800 bg-slate-900/30 hover:border-slate-700 hover:bg-slate-900/50'
+        onDragEnter={handleDrag} onDragOver={handleDrag} onDragLeave={handleDrag} onDrop={handleDrop}
+        className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-7 text-center cursor-pointer transition-all duration-300 group ${
+          dragActive
+            ? 'border-indigo-400 bg-indigo-50/80 scale-[1.02]'
+            : 'border-slate-200 bg-white/40 hover:border-indigo-300 hover:bg-indigo-50/30'
         }`}
+        onClick={() => fileInputRef.current?.click()}
       >
-        <input
-          ref={fileInputRef}
-          type="file"
-          className="hidden"
-          accept=".pdf,.txt"
-          onChange={handleChange}
-        />
-        
-        <div className="h-12 w-12 rounded-xl bg-slate-900/80 flex items-center justify-center border border-slate-800 text-slate-400 mb-4 shadow-inner">
-          <Upload size={24} className="text-indigo-400" />
+        <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.txt" onChange={handleChange} />
+
+        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 ${
+          dragActive
+            ? 'bg-indigo-100 text-indigo-600 scale-110'
+            : 'bg-gradient-to-br from-indigo-50 to-violet-50 text-indigo-400 group-hover:scale-105'
+        }`}>
+          <CloudUpload size={24} />
         </div>
-        
-        <p className="text-sm text-slate-200 font-medium mb-1">
-          Drag & drop your document here, or{' '}
-          <button onClick={onButtonClick} className="text-indigo-400 hover:underline focus:outline-none">
-            browse
-          </button>
+
+        <p className="text-sm font-semibold text-slate-600 mb-0.5">
+          Drop your file here or <span className="text-indigo-500">browse</span>
         </p>
-        <p className="text-xs text-slate-500">Supports PDF or TXT up to 10MB</p>
+        <p className="text-[11px] text-slate-400">Supports PDF and TXT — up to 10MB</p>
       </div>
 
-      {/* Upload Progress Status Indicator */}
+      {/* Status */}
       {uploadState.status !== 'idle' && (
-        <div className={`p-4 rounded-xl flex items-start space-x-3 border ${
-          uploadState.status === 'uploading' ? 'bg-slate-900/50 border-slate-800 text-slate-300' :
-          uploadState.status === 'success' ? 'bg-emerald-950/20 border-emerald-900/50 text-emerald-400' :
-          'bg-rose-950/20 border-rose-900/50 text-rose-400'
+        <div className={`p-3.5 rounded-xl flex items-start space-x-3 animate-fade-in text-sm ${
+          uploadState.status === 'uploading' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' :
+          uploadState.status === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+          'bg-red-50 text-red-600 border border-red-100'
         }`}>
-          {uploadState.status === 'uploading' && <Loader2 size={18} className="animate-spin mt-0.5 text-indigo-400" />}
-          {uploadState.status === 'success' && <CheckCircle2 size={18} className="mt-0.5 text-emerald-400" />}
-          {uploadState.status === 'error' && <AlertCircle size={18} className="mt-0.5 text-rose-400" />}
-          
-          <div className="flex-1 text-sm">
-            <p className="font-semibold text-slate-200">{uploadState.filename}</p>
-            <p className="text-xs opacity-90 mt-0.5">{uploadState.message}</p>
+          {uploadState.status === 'uploading' && <Loader2 size={16} className="animate-spin mt-0.5 text-indigo-500 flex-shrink-0" />}
+          {uploadState.status === 'success' && <CheckCircle2 size={16} className="mt-0.5 text-emerald-500 flex-shrink-0" />}
+          {uploadState.status === 'error' && <AlertCircle size={16} className="mt-0.5 text-red-500 flex-shrink-0" />}
+          <div className="min-w-0">
+            <p className="font-semibold text-[13px]">{uploadState.filename}</p>
+            <p className="text-[11px] opacity-80 mt-0.5">{uploadState.message}</p>
           </div>
         </div>
       )}
 
-      {/* Uploaded Documents List */}
-      <div className="flex flex-col space-y-3">
-        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Documents</h3>
+      {/* Documents */}
+      <div className="space-y-2.5">
+        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Knowledge Base</h3>
         {uploadedFiles.length === 0 ? (
-          <div className="border border-slate-800/80 rounded-xl p-4 text-center text-slate-500 text-sm bg-slate-950/10">
-            No documents uploaded to this thread yet.
+          <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center text-slate-400 text-xs bg-white/30">
+            No documents uploaded yet
           </div>
         ) : (
-          <div className="max-h-48 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
-            {uploadedFiles.map((f, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 hover:bg-slate-900/60 transition-all duration-200">
+          <div className="max-h-44 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+            {uploadedFiles.map((f, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/60 border border-slate-100 hover:shadow-md hover:shadow-indigo-500/5 transition-all duration-200 animate-fade-in">
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 text-indigo-400">
-                    <FileText size={16} />
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center text-indigo-500 flex-shrink-0">
+                    <FileText size={15} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-slate-200 truncate">{f.name}</p>
-                    <p className="text-xs text-slate-500">{f.size}</p>
+                    <p className="text-[13px] font-semibold text-slate-700 truncate">{f.name}</p>
+                    <p className="text-[10px] text-slate-400">{f.size || 'Local'}</p>
                   </div>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-950/30 text-indigo-400 border border-indigo-900/50">
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-500 border border-indigo-100 flex-shrink-0">
                   {f.chunks} chunks
                 </span>
               </div>

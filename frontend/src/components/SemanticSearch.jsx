@@ -1,4 +1,4 @@
-// frontend/src/components/SemanticSearch.jsx: Search tab that queries the FAISS index for matching snippets without calling the LLM.
+// frontend/src/components/SemanticSearch.jsx: Premium light-mode semantic search panel with tag filtering.
 
 import React, { useState } from 'react';
 import { Search, Loader2, BookOpen, Tag } from 'lucide-react';
@@ -16,14 +16,11 @@ export default function SemanticSearch({ threadId }) {
     if (!query.trim()) return;
     setIsSearching(true);
     setSearched(false);
-
     try {
-      // Perform raw vector similarity search and return matching document snippets
       const data = await semanticSearch(threadId, query, tagFilter || null, 5);
       setResults(data);
       setSearched(true);
     } catch (err) {
-      console.error("Semantic search failed:", err);
       setResults([]);
       setSearched(true);
     } finally {
@@ -32,67 +29,55 @@ export default function SemanticSearch({ threadId }) {
   };
 
   return (
-    <div className="flex flex-col space-y-6">
-      <form onSubmit={handleSearch} className="space-y-3">
-        {/* Query input */}
+    <div className="flex flex-col space-y-4">
+      <form onSubmit={handleSearch} className="space-y-2.5">
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            type="text" value={query} onChange={(e) => setQuery(e.target.value)}
             placeholder="Search across your documents..."
-            className="w-full bg-slate-950 text-slate-100 text-sm border border-slate-800 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-indigo-500/70 transition-colors placeholder:text-slate-500"
+            className="w-full bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
           />
         </div>
-
-        {/* Optional tag filter */}
         <div className="relative">
-          <Tag size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Tag size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text"
-            value={tagFilter}
-            onChange={(e) => setTagFilter(e.target.value)}
+            type="text" value={tagFilter} onChange={(e) => setTagFilter(e.target.value)}
             placeholder="Filter by tag (optional)"
-            className="w-full bg-slate-950 text-slate-100 text-sm border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-indigo-500/70 transition-colors placeholder:text-slate-500"
+            className="w-full bg-slate-50 text-slate-700 text-sm border border-slate-200 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all placeholder:text-slate-400"
           />
         </div>
-
         <button
-          type="submit"
-          disabled={isSearching || !query.trim()}
-          className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+          type="submit" disabled={isSearching || !query.trim()}
+          className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-600 hover:to-violet-600 text-white text-sm font-semibold transition-all shadow-md shadow-indigo-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          {isSearching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+          {isSearching ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
           <span>{isSearching ? 'Searching...' : 'Search'}</span>
         </button>
       </form>
 
-      {/* Results */}
       {searched && (
-        <div className="space-y-3">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            {results.length > 0 ? `${results.length} matching snippets` : 'No results found'}
+        <div className="space-y-2.5 animate-fade-in">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+            {results.length > 0 ? `${results.length} results` : 'No results'}
           </p>
           {results.map((r, i) => (
-            <div key={i} className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 space-y-2 hover:border-slate-700 transition-colors">
+            <div key={i} className="bg-white/70 border border-slate-100 rounded-xl p-3.5 space-y-2 hover:shadow-md hover:shadow-indigo-500/5 transition-all">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <BookOpen size={14} className="text-indigo-400" />
-                  <span className="text-xs font-semibold text-slate-300">{r.source}</span>
+                  <BookOpen size={13} className="text-indigo-500" />
+                  <span className="text-[11px] font-bold text-slate-600">{r.source}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   {r.tag && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-950/40 text-violet-400 border border-violet-900/50">
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-500 border border-violet-100 font-bold">
                       {r.tag}
                     </span>
                   )}
-                  <span className="text-[10px] font-mono text-slate-500">Chunk {r.chunk_index}</span>
+                  <span className="text-[9px] font-mono text-slate-400">#{r.chunk_index}</span>
                 </div>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed font-mono line-clamp-4">
-                "{r.content}"
-              </p>
+              <p className="text-[11px] text-slate-500 leading-relaxed font-mono line-clamp-3">"{r.content}"</p>
             </div>
           ))}
         </div>

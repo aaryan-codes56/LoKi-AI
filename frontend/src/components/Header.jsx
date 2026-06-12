@@ -1,35 +1,41 @@
-// frontend/src/components/Header.jsx: Navigation header showing active session thread ID, app branding, and the reset button.
+// frontend/src/components/Header.jsx: Premium light-mode header with gradient branding, session badge, and action buttons.
 
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Sparkles } from 'lucide-react';
 
 export default function Header({ threadId, onClear, isClearing }) {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-50 glass-card-strong px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      {/* Brand */}
       <div className="flex items-center space-x-3">
-        <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-          <span className="font-extrabold text-white text-xl tracking-tight">Lk</span>
+        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 animate-glow">
+          <Sparkles size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="font-bold text-white text-lg leading-tight">LoKi</h1>
-          <p className="text-xs text-slate-400">Personal RAG Knowledge Assistant</p>
+          <h1 className="font-extrabold text-[1.15rem] leading-tight tracking-tight">
+            <span className="gradient-text">LoKi</span>
+          </h1>
+          <p className="text-[11px] text-slate-400 font-medium tracking-wide">AI Second Brain</p>
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
-        <div className="hidden md:flex items-center space-x-2 bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="text-xs font-mono text-slate-400">Thread:</span>
-          <span className="text-xs font-mono text-slate-200 select-all">{threadId}</span>
+      {/* Right controls */}
+      <div className="flex items-center space-x-3">
+        {/* Thread badge — hidden on mobile */}
+        <div className="hidden md:flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/40 animate-pulse" />
+          <span className="text-[11px] font-medium text-slate-400">Session</span>
+          <span className="text-[11px] font-mono text-slate-500 select-all max-w-[120px] truncate">{threadId}</span>
         </div>
-        
+
+        {/* Clear button */}
         <button
           onClick={onClear}
           disabled={isClearing}
-          className="flex items-center space-x-2 bg-rose-950/20 hover:bg-rose-950/40 text-rose-400 hover:text-rose-300 border border-rose-900/50 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_15px_rgba(244,63,94,0.1)]"
+          className="group flex items-center space-x-1.5 bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 border border-slate-200 hover:border-red-200 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:shadow-red-500/5"
         >
-          <Trash2 size={16} className={isClearing ? 'animate-spin' : ''} />
-          <span>{isClearing ? 'Clearing...' : 'Clear History'}</span>
+          <Trash2 size={14} className={isClearing ? 'animate-spin' : 'group-hover:scale-110 transition-transform'} />
+          <span className="hidden sm:inline">{isClearing ? 'Clearing...' : 'Clear'}</span>
         </button>
       </div>
     </header>
