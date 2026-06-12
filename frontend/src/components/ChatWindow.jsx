@@ -68,10 +68,10 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
     <div className="flex flex-col h-full bg-white border border-slate-200/60 rounded-2xl overflow-hidden shadow-md">
       
       {/* Scrollable Message Box */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar bg-slate-50/20">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 gap-6 flex flex-col custom-scrollbar bg-slate-50/20">
         
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-4 max-w-lg mx-auto space-y-5 my-auto">
+          <div className="h-full flex flex-col items-center justify-center text-center p-4 max-w-lg mx-auto gap-5 my-auto">
             
             {/* Animated Float Icon */}
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-100 flex items-center justify-center text-indigo-500 shadow-sm animate-pulse-glow">
@@ -86,7 +86,7 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
             </div>
 
             {/* Quick Suggestions */}
-            <div className="w-full space-y-2 pt-3">
+            <div className="w-full gap-2 flex flex-col pt-3">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center mb-1">Simulate Quick Inquiries</span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {suggestions.map((item, i) => (
@@ -103,7 +103,7 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6 max-w-4xl mx-auto w-full">
             {messages.map((msg, idx) => {
               const isUser = msg.sender === 'user';
               return (
@@ -115,7 +115,7 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
                     </div>
                   )}
 
-                  <div className="flex flex-col max-w-[85%] sm:max-w-[75%] space-y-2.5">
+                  <div className="flex flex-col max-w-[85%] sm:max-w-[75%] gap-2.5">
                     <div className={`rounded-2xl px-4.5 py-3.5 text-[13px] leading-relaxed shadow-xs border ${
                       isUser
                         ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white border-transparent rounded-tr-md shadow-indigo-500/5'
@@ -131,7 +131,7 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
 
                     {/* Citations / References */}
                     {!isUser && msg.sources?.length > 0 && (
-                      <div className="space-y-2 mt-1 pl-1">
+                      <div className="gap-2 flex flex-col mt-1 pl-1">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Retrieved Vector Snippets</span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {msg.sources.map((src, si) => (
@@ -162,8 +162,8 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
                 <div className="h-8.5 w-8.5 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center text-white shadow-sm flex-shrink-0">
                   <Bot size={15} />
                 </div>
-                <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-md px-4.5 py-3.5 shadow-xs flex items-center space-x-3">
-                  <div className="flex space-x-1">
+                <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-md px-4.5 py-3.5 shadow-xs flex items-center gap-3">
+                  <div className="flex gap-1">
                     <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full typing-dot" style={{ animationDelay: '0s' }} />
                     <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full typing-dot" style={{ animationDelay: '0.2s' }} />
                     <span className="h-1.5 w-1.5 bg-indigo-500 rounded-full typing-dot" style={{ animationDelay: '0.4s' }} />
@@ -178,29 +178,31 @@ export default function ChatWindow({ messages, onSendMessage, isThinking, active
       </div>
 
       {/* Floating Query Form input */}
-      <form onSubmit={handleSubmit} className="p-3.5 border-t border-slate-200/60 bg-white flex items-center gap-3">
-        <div className="flex-1 relative flex items-center">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isThinking}
-            placeholder={activeTag ? `Ask about documents tagged with "${activeTag}"...` : "Ask about your indexed files..."}
-            className="w-full bg-slate-50 text-slate-700 text-xs.5 border border-slate-200 rounded-xl px-4.5 py-3.5 pr-14 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-300 focus:bg-white transition-all placeholder:text-slate-400"
-          />
-          {activeTag && (
-            <span className="absolute right-4 text-[9px] font-black uppercase text-violet-500 bg-violet-50 px-2 py-0.5 rounded-md border border-violet-100">
-              {activeTag}
-            </span>
-          )}
+      <form onSubmit={handleSubmit} className="p-3.5 border-t border-slate-200/60 bg-white flex justify-center">
+        <div className="max-w-4xl w-full flex items-center gap-3">
+          <div className="flex-1 relative flex items-center">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={isThinking}
+              placeholder={activeTag ? `Ask about documents tagged with "${activeTag}"...` : "Ask about your indexed files..."}
+              className="w-full bg-slate-50 text-slate-700 text-xs.5 border border-slate-200 rounded-xl px-4.5 py-3.5 pr-14 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-300 focus:bg-white transition-all placeholder:text-slate-400"
+            />
+            {activeTag && (
+              <span className="absolute right-4 text-[9px] font-black uppercase text-violet-500 bg-violet-50 px-2 py-0.5 rounded-md border border-violet-100">
+                {activeTag}
+              </span>
+            )}
+          </div>
+          <button
+            type="submit"
+            disabled={!input.trim() || isThinking}
+            className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 hover:opacity-95 text-white flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-md shadow-indigo-500/20 active:scale-95 flex-shrink-0 cursor-pointer"
+          >
+            <Send size={15} />
+          </button>
         </div>
-        <button
-          type="submit"
-          disabled={!input.trim() || isThinking}
-          className="h-11 w-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 hover:opacity-95 text-white flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-md shadow-indigo-500/20 active:scale-95 flex-shrink-0 cursor-pointer"
-        >
-          <Send size={15} />
-        </button>
       </form>
     </div>
   );

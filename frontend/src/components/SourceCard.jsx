@@ -12,7 +12,7 @@ export default function SourceCard({ source, content, chunkIndex }) {
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between p-2.5 text-left hover:bg-indigo-50/20 transition-colors focus:outline-none cursor-pointer"
       >
-        <div className="flex items-center space-x-2.5 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="h-6 w-6 rounded-md bg-indigo-50 text-indigo-500 flex items-center justify-center flex-shrink-0">
             <BookOpen size={11} />
           </div>

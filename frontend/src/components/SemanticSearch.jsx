@@ -29,8 +29,8 @@ export default function SemanticSearch({ threadId }) {
   };
 
   return (
-    <div className="flex flex-col space-y-4">
-      <form onSubmit={handleSearch} className="space-y-2.5">
+    <div className="flex flex-col gap-4">
+      <form onSubmit={handleSearch} className="flex flex-col gap-2.5">
         <div className="relative">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -56,7 +56,7 @@ export default function SemanticSearch({ threadId }) {
         <button
           type="submit"
           disabled={isSearching || !query.trim()}
-          className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-sm shadow-indigo-500/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-sm shadow-indigo-500/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         >
           {isSearching ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
           <span>{isSearching ? 'Searching...' : 'Search Vectors'}</span>
@@ -64,23 +64,23 @@ export default function SemanticSearch({ threadId }) {
       </form>
 
       {searched && (
-        <div className="space-y-2.5 animate-fade-in">
+        <div className="flex flex-col gap-2.5 animate-fade-in">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">
             {results.length > 0 ? `${results.length} vector segments found` : 'No segments found'}
           </p>
           
-          <div className="max-h-[180px] overflow-y-auto pr-0.5 space-y-2 custom-scrollbar">
+          <div className="max-h-[180px] overflow-y-auto pr-0.5 gap-2 flex flex-col custom-scrollbar">
             {results.map((r, i) => (
               <div
                 key={i}
-                className="bg-white/80 border border-slate-100/90 rounded-xl p-3.5 space-y-2.5 hover:shadow-sm hover:border-slate-200/50 transition-all duration-200"
+                className="bg-white/80 border border-slate-100/90 rounded-xl p-3.5 gap-2.5 flex flex-col hover:shadow-sm hover:border-slate-200/50 transition-all duration-200"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <BookOpen size={12} className="text-indigo-500" />
                     <span className="text-[10px] font-bold text-slate-600 truncate max-w-[120px]">{r.source}</span>
                   </div>
-                  <div className="flex items-center space-x-1.5">
+                  <div className="flex items-center gap-1.5">
                     {r.tag && (
                       <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-violet-50 text-violet-600 border border-violet-100/50 font-bold">
                         {r.tag}

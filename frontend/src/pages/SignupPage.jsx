@@ -49,7 +49,7 @@ export default function SignupPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Brand */}
-        <Link to="/" className="flex items-center space-x-2.5 relative z-10">
+        <Link to="/" className="flex items-center gap-2.5 relative z-10">
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <Sparkles size={17} className="text-white" />
           </div>
@@ -57,8 +57,8 @@ export default function SignupPage() {
         </Link>
 
         {/* Info list */}
-        <div className="space-y-10 my-auto relative z-10">
-          <div className="space-y-3.5">
+        <div className="flex flex-col gap-10 my-auto relative z-10">
+          <div className="flex flex-col gap-3.5">
             <h2 className="text-3xl font-black tracking-tight leading-snug">
               Construct Your <br />
               <span className="text-indigo-400">AI Knowledge Brain.</span>
@@ -68,13 +68,13 @@ export default function SignupPage() {
             </p>
           </div>
 
-          <div className="space-y-5">
+          <div className="flex flex-col gap-5">
             {[
               { icon: Zap, title: "Lightning FAISS Retrieval", desc: "Index and match query segments in under 10 milliseconds." },
               { icon: Database, title: "Structured SQLite Threads", desc: "Keep separate logs for personal, work, or research projects." },
               { icon: Shield, title: "Zero-Trust Data Hashing", desc: "Your user account is securely salt-hashed and authenticated." }
             ].map((item, idx) => (
-              <div key={idx} className="flex items-start space-x-3.5 group">
+              <div key={idx} className="flex items-start gap-3.5 group">
                 <div className="h-9 w-9 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform flex-shrink-0">
                   <item.icon size={16} />
                 </div>
@@ -97,7 +97,7 @@ export default function SignupPage() {
       <div className="lg:col-span-7 flex flex-col justify-center items-center px-4 sm:px-12 py-16 relative z-10">
         
         {/* Mobile Header */}
-        <Link to="/" className="lg:hidden flex items-center space-x-2.5 mb-8">
+        <Link to="/" className="lg:hidden flex items-center gap-2.5 mb-8">
           <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
             <Sparkles size={18} className="text-white" />
           </div>
@@ -111,7 +111,7 @@ export default function SignupPage() {
             <p className="text-xs text-slate-400 mt-1.5">Get started with a premium user account</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4.5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4.5">
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Username</label>
               <input
@@ -163,7 +163,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center space-x-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:opacity-95 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-3 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 hover:opacity-95 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] mt-3 cursor-pointer"
             >
               {loading ? (
                 <>

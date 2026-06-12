@@ -144,7 +144,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen max-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Inter',sans-serif] overflow-hidden relative">
+    <div className="h-screen w-screen bg-[#f8fafc] text-slate-800 flex flex-col font-['Inter',sans-serif] overflow-hidden relative">
       
       {/* Background blurs */}
       <div className="absolute top-[-20%] left-[-10%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-indigo-300/10 to-violet-300/10 blur-[90px] pointer-events-none z-0" />
@@ -155,7 +155,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-50 flex">
           <div className="w-80 bg-white border-r border-slate-200/60 flex flex-col h-full shadow-2xl animate-fade-in">
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="font-extrabold text-slate-700 flex items-center space-x-2 text-sm">
+              <h2 className="font-extrabold text-slate-700 flex items-center gap-2 text-sm">
                 <History size={16} className="text-indigo-500" />
                 <span>Saved Sessions</span>
               </h2>
@@ -169,13 +169,13 @@ export default function Dashboard() {
             
             <button
               onClick={newThread}
-              className="m-4 flex items-center justify-center space-x-2 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100/50 text-indigo-600 text-xs font-bold transition-all cursor-pointer"
+              className="m-4 flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100/50 text-indigo-600 text-xs font-bold transition-all cursor-pointer"
             >
               <Plus size={14} />
               <span>Start New Thread</span>
             </button>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-1.5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 pb-6 gap-1.5 flex flex-col custom-scrollbar">
               {threads.map(t => (
                 <button
                   key={t.id}
@@ -204,10 +204,10 @@ export default function Dashboard() {
 
       {/* Sub-bar / Info Navigation */}
       <div className="border-b border-slate-200/40 bg-white/40 backdrop-blur-md px-4 sm:px-6 py-2.5 flex items-center justify-between z-10">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => setShowDocSidebar(!showDocSidebar)}
-            className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
           >
             <FolderOpen size={14} />
             <span>{showDocSidebar ? 'Hide Source Panel' : 'Show Source Panel'}</span>
@@ -216,7 +216,7 @@ export default function Dashboard() {
           {isAuthenticated && (
             <button
               onClick={() => setShowHistorySidebar(true)}
-              className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
             >
               <History size={14} />
               <span>Saved Threads</span>
@@ -225,23 +225,23 @@ export default function Dashboard() {
 
           <button
             onClick={newThread}
-            className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition-colors cursor-pointer"
           >
             <Plus size={14} />
             <span>New Session</span>
           </button>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <div className="flex items-center space-x-3.5">
-              <div className="flex items-center space-x-1.5 text-xs bg-indigo-50 border border-indigo-100/50 px-2.5 py-1 rounded-lg">
+            <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-1.5 text-xs bg-indigo-50 border border-indigo-100/50 px-2.5 py-1 rounded-lg">
                 <User size={12} className="text-indigo-500" />
                 <span className="text-indigo-600 font-bold">{username}</span>
               </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-1 text-xs text-red-500 hover:text-red-600 font-bold transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 font-bold transition-colors cursor-pointer"
               >
                 <LogOut size={13} />
                 <span className="hidden sm:inline">Logout</span>
@@ -250,7 +250,7 @@ export default function Dashboard() {
           ) : (
             <Link
               to="/login"
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-extrabold flex items-center space-x-1 transition-all"
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-extrabold flex items-center gap-1 transition-all"
             >
               <span>Sign in to save threads</span>
               <ChevronRight size={13} />
@@ -262,7 +262,7 @@ export default function Dashboard() {
       {/* Database Offline Banner */}
       {errorBanner && (
         <div className="bg-red-50 border-b border-red-100 text-red-600 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs font-semibold animate-fade-in z-10">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <AlertTriangle size={14} className="text-red-500 animate-pulse" />
             <span>{errorBanner}</span>
           </div>
@@ -276,7 +276,7 @@ export default function Dashboard() {
       )}
 
       {/* Main Workspace Frame */}
-      <main className="flex-1 flex w-full max-w-7xl mx-auto overflow-hidden relative z-10">
+      <main className="flex-1 flex w-full overflow-hidden relative z-10">
         
         {/* Collapsible Source Side Panel (Uploads, Search, Tags) */}
         <div
@@ -284,7 +284,7 @@ export default function Dashboard() {
             showDocSidebar ? 'w-80 opacity-100 px-4 py-5' : 'w-0 opacity-0 px-0 py-0'
           }`}
         >
-          <div className="flex-1 flex flex-col space-y-5 min-w-[288px]">
+          <div className="flex-1 flex flex-col gap-5 min-w-[288px]">
             {/* Sidebar Tabs */}
             <div className="glass-panel rounded-xl overflow-hidden shadow-sm flex-shrink-0">
               <div className="flex border-b border-slate-100">
@@ -295,7 +295,7 @@ export default function Dashboard() {
                   <button
                     key={id}
                     onClick={() => setActiveTab(id)}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-bold transition-all cursor-pointer ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold transition-all cursor-pointer ${
                       activeTab === id
                         ? 'text-indigo-600 border-b-2 border-indigo-500 bg-indigo-50/20'
                         : 'text-slate-400 hover:text-slate-600'
@@ -321,7 +321,7 @@ export default function Dashboard() {
 
             {/* Custom Tag Metadata Filter */}
             <div className="glass-panel rounded-xl p-4 flex-shrink-0">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center space-x-1.5">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
                 <Tag size={11} className="text-violet-500" />
                 <span>Filter Knowledge Base</span>
               </h3>
@@ -343,8 +343,8 @@ export default function Dashboard() {
             </div>
 
             {/* Sidebar Guide */}
-            <div className="glass-panel rounded-xl p-4.5 text-slate-400 text-[11px] leading-relaxed space-y-1.5 overflow-y-auto custom-scrollbar flex-1">
-              <h4 className="font-bold text-slate-600 flex items-center space-x-1.5 text-xs mb-2">
+            <div className="glass-panel rounded-xl p-4.5 text-slate-400 text-[11px] leading-relaxed gap-1.5 flex flex-col overflow-y-auto custom-scrollbar flex-1">
+              <h4 className="font-bold text-slate-600 flex items-center gap-1.5 text-xs mb-2">
                 <HelpCircle size={13} className="text-indigo-500" />
                 <span>RAG Instructions</span>
               </h4>
@@ -370,7 +370,7 @@ export default function Dashboard() {
         <div className="flex-1 flex flex-col h-full bg-transparent p-4 sm:p-5 relative">
           {activeTag && (
             <div className="mb-3.5 px-4 py-2 rounded-xl bg-violet-50 border border-violet-100 text-xs text-violet-600 flex items-center justify-between font-semibold animate-fade-in">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <Tag size={12} />
                 <span>Active Query Category Filter: <strong>{activeTag}</strong></span>
               </div>

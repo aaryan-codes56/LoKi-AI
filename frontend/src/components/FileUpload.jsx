@@ -46,7 +46,7 @@ export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = 
   };
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col gap-4">
       {/* Drop Zone */}
       <div
         onDragEnter={handleDrag}
@@ -78,7 +78,7 @@ export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = 
 
       {/* Upload State Alerts */}
       {uploadState.status !== 'idle' && (
-        <div className={`p-3 rounded-xl flex items-start space-x-2.5 animate-fade-in text-xs ${
+        <div className={`p-3 rounded-xl flex items-start gap-2.5 animate-fade-in text-xs ${
           uploadState.status === 'uploading' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/50' :
           uploadState.status === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50' :
           'bg-red-50 text-red-600 border border-red-100/50'
@@ -94,20 +94,20 @@ export default function FileUpload({ onUploadSuccess, threadId, uploadedFiles = 
       )}
 
       {/* Uploaded Documents List */}
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Files in Current Session</h3>
         {uploadedFiles.length === 0 ? (
           <div className="border border-dashed border-slate-200/80 rounded-xl p-4 text-center text-slate-400 text-xs bg-white/35">
             No source documents uploaded
           </div>
         ) : (
-          <div className="max-h-[160px] overflow-y-auto pr-0.5 space-y-1.5 custom-scrollbar">
+          <div className="max-h-[160px] overflow-y-auto pr-0.5 gap-1.5 flex flex-col custom-scrollbar">
             {uploadedFiles.map((f, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between p-2.5 rounded-xl bg-white/80 border border-slate-100/80 hover:shadow-sm hover:border-slate-200/60 transition-all duration-200 animate-fade-in"
               >
-                <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <div className="h-7 w-7 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center flex-shrink-0">
                     <FileText size={14} />
                   </div>
